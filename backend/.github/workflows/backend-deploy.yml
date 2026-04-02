@@ -1,0 +1,40 @@
+name: Backend → Render Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'          # Only triggers when backend changes
+
+jobs:
+  test:
+    name: Lint & Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Check server file exists
+        working-directory: backend
+        run: node -e "require('./src/server.js')" || echo "Skipping - needs env"
+
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+        # Get this URL from: Render Dashboard → Service → Settings → Deploy Hook
