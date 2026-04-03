@@ -1,8 +1,10 @@
 'use client'
-import { useState, useRef, useCallback } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { portfolioApi } from '@/lib/api'
+import { FaLinkedin, FaGithub } from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
 
 interface FormData {
   name: string
@@ -11,60 +13,29 @@ interface FormData {
   message: string
 }
 
-const INFO_ITEMS = [
-  { label: 'Email',    value: 'krushnapokharkar4@gmail.com', color: '#00f5ff', icon: '◉' },
-  { label: 'Phone',    value: '+91 7410796292',              color: '#bf00ff', icon: '◆' },
-  { label: 'Location', value: 'Pune, Maharashtra 🇮🇳',        color: '#00ff88', icon: '◈' },
-  { label: 'College',  value: 'AISSMS Polytechnic \'26',     color: '#ff0080', icon: '◇' },
+const CONTACT_INFO = [
+  { label: 'Email', value: 'krushnapokharkar4@gmail.com', color: '#00f5ff' },
+  { label: 'Phone', value: '+91 7410796292', color: '#bf00ff' },
+  { label: 'Location', value: 'Pune, Maharashtra 🇮🇳', color: '#00ff88' },
+  { label: 'College', value: "AISSMS Polytechnic '26", color: '#ff0080' },
 ]
-
 const SOCIALS = [
-  { label: 'LinkedIn',  href: 'https://www.linkedin.com/in/krushnapokharkar2142', icon: 'in',  color: '#00f5ff' },
-  { label: 'Email',     href: 'mailto:krushnapokharkar4@gmail.com',               icon: '@',   color: '#bf00ff' },
-  { label: 'Portfolio', href: 'https://krishna-portfolio-peachone.vercel.app',    icon: '⬡',   color: '#00ff88' },
-]
-
-// ── Tilt wrapper for info cards ────────────────────────────────
-function TiltInfoCard({
-  color,
-  children,
-}: {
-  color: string
-  children: React.ReactNode
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const el = ref.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width  - 0.5) * 12
-    const y = ((e.clientY - rect.top)  / rect.height - 0.5) * -12
-    el.style.transform = `perspective(700px) rotateY(${x}deg) rotateX(${y}deg) translateZ(6px)`
-  }, [])
-
-  const onMouseLeave = useCallback(() => {
-    if (ref.current) {
-      ref.current.style.transform = 'perspective(700px) rotateY(0deg) rotateX(0deg) translateZ(0)'
-    }
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
-      className="glass-card p-4 flex items-center gap-4 cursor-default"
-      style={{
-        borderColor: `${color}12`,
-        transition: 'transform 0.12s ease',
-        transformStyle: 'preserve-3d',
-      }}
-    >
-      {children}
-    </div>
-  )
-}
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/krushnapokharkar2142",
+    icon: FaLinkedin,
+  },
+  {
+    label: "Email",
+    href: "mailto:krushnapokharkar4@gmail.com",
+    icon: MdEmail,
+  },
+  {
+    label: "GitHub",
+    href: "https://github.com/krushna2142",
+    icon: FaGithub,
+  },
+];
 
 export default function Contact() {
   const [sending, setSending] = useState(false)
@@ -84,28 +55,23 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="section-padding relative overflow-hidden">
-
-      {/* Background glows */}
+    <section id="contact" className="section-padding relative">
+      {/* Ambient */}
       <div
-        className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(255,0,128,0.04) 0%, transparent 70%)' }}
-      />
-      <div
-        className="absolute top-1/4 left-0 w-80 h-80 rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(0,245,255,0.03) 0%, transparent 70%)' }}
+        className="absolute bottom-0 right-0 w-[500px] h-[500px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle at bottom right, rgba(255,0,128,0.05), transparent 70%)' }}
       />
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-6xl mx-auto relative z-10">
 
-        {/* ── Section header ──────────────────────────────────── */}
-        <div className="mb-14">
-          <span className="section-eyebrow text-neon-pink/50">// 05. Let&apos;s Build Together</span>
+        {/* Header */}
+        <div className="mb-12">
+          <p className="section-eyebrow text-[var(--neon-pink)]">// 05. LET&apos;S BUILD TOGETHER</p>
           <h2 className="section-title">
             <span className="text-white">Get In </span>
             <span className="neon-text-pink">Touch</span>
           </h2>
-          <p className="text-white/30 text-sm mt-1 max-w-md font-mono">
+          <p className="section-subtitle">
             Open to SDE internships, AI research collabs, and freelance projects.
             Response guaranteed within 24 hours.
           </p>
@@ -113,174 +79,135 @@ export default function Contact() {
 
         <div className="grid lg:grid-cols-5 gap-10 items-start">
 
-          {/* ── Info column ──────────────────────────────────── */}
+          {/* Info column */}
           <div className="lg:col-span-2 space-y-3">
-
-            {/* Info cards with 3D tilt */}
-            {INFO_ITEMS.map(({ label, value, color, icon }) => (
-              <TiltInfoCard key={label} color={color}>
-                {/* Icon dot */}
+            {CONTACT_INFO.map(({ label, value, color }) => (
+              <div
+                key={label}
+                className="flex items-center gap-4 hover:-translate-y-0.5 transition-transform duration-300"
+                style={{
+                  padding: '1rem 1.25rem',
+                  borderRadius: '12px',
+                  backdropFilter: 'blur(16px)',
+                  background: 'rgba(255,255,255,0.025)',
+                  border: `1px solid ${color}14`,
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                }}
+              >
                 <div
-                  className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={{
-                    background: `${color}0d`,
-                    border: `1px solid ${color}18`,
-                    color,
-                    fontSize: '0.8rem',
-                    boxShadow: `0 0 12px ${color}12`,
-                  }}
-                >
-                  {icon}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="font-mono text-[10px] text-white/20 tracking-widest uppercase mb-0.5">
-                    {label}
-                  </p>
-                  <p className="font-mono text-sm truncate"
-                     style={{ color: 'rgba(255,255,255,0.65)' }}>
-                    {value}
-                  </p>
-                </div>
-
-                {/* Subtle right glow bar */}
-                <div
-                  className="shrink-0 w-0.5 h-8 rounded-full"
-                  style={{ background: `linear-gradient(180deg, transparent, ${color}40, transparent)` }}
+                  className="flex-shrink-0 w-2 h-2 rounded-full"
+                  style={{ background: color, boxShadow: `0 0 8px ${color}` }}
                 />
-              </TiltInfoCard>
+                <div className="min-w-0">
+                  <p className="font-mono text-[0.62rem] text-white/22 mb-0.5 tracking-widest uppercase">{label}</p>
+                  <p className="font-mono text-[0.8rem] text-white/60 truncate leading-relaxed">{value}</p>
+                </div>
+              </div>
             ))}
 
             {/* Socials */}
-            <div className="pt-3">
-              <p className="font-mono text-[10px] text-white/20 mb-3 tracking-[0.2em] uppercase">
-                // Find me online
-              </p>
-              <div className="flex gap-2">
-                {SOCIALS.map(({ label, href, icon, color }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={label}
-                    className="w-11 h-11 rounded-xl glass-card flex items-center justify-center
-                               font-mono text-xs text-white/35 transition-all duration-300"
-                    style={{
-                      transition: 'all 0.25s ease',
-                    }}
-                    onMouseEnter={e => {
-                      const el = e.currentTarget
-                      el.style.color = color
-                      el.style.borderColor = `${color}30`
-                      el.style.background = `${color}08`
-                      el.style.boxShadow = `0 0 20px ${color}20`
-                      el.style.transform = 'translateY(-2px)'
-                    }}
-                    onMouseLeave={e => {
-                      const el = e.currentTarget
-                      el.style.color = 'rgba(255,255,255,0.35)'
-                      el.style.borderColor = ''
-                      el.style.background = ''
-                      el.style.boxShadow = ''
-                      el.style.transform = ''
-                    }}
-                  >
-                    {icon}
-                  </a>
-                ))}
-              </div>
+            <div className="flex gap-2.5">
+              {SOCIALS.map(({ label, href, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={label}
+                  className="group flex items-center justify-center text-white/40 hover:text-[var(--neon-cyan)] transition-all duration-300"
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "10px",
+                    backdropFilter: "blur(12px)",
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <Icon
+                    size={18}
+                    className="transition-all duration-300 group-hover:scale-110"
+                  />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* ── Contact form ──────────────────────────────────── */}
+          {/* Form */}
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="lg:col-span-3 glass-card p-8 space-y-5 corner-tl corner-br"
-            style={{ borderColor: 'rgba(255,0,128,0.08)' }}
+            className="lg:col-span-3 glass-card-elevated"
+            style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
           >
-            {/* Top accent */}
-            <div
-              className="absolute top-0 left-8 right-8 h-px rounded-full"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(255,0,128,0.25), transparent)' }}
-            />
-
-            <div className="grid sm:grid-cols-2 gap-5">
-              <div className="space-y-1">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="font-mono text-[0.62rem] text-white/30 tracking-widest uppercase block">
+                  Your Name
+                </label>
                 <input
                   {...register('name', { required: true })}
-                  placeholder="Your Name"
-                  className={`input-field ${errors.name ? 'border-neon-pink/35' : ''}`}
+                  placeholder="John Doe"
+                  className={`input-field ${errors.name ? 'border-[rgba(255,0,128,0.4)]' : ''}`}
                 />
                 {errors.name && (
-                  <p className="font-mono text-[11px] text-neon-pink/70 pl-1">Required</p>
+                  <p className="font-mono text-[0.65rem] text-[var(--neon-pink)]">Required</p>
                 )}
               </div>
-              <div className="space-y-1">
+
+              <div className="space-y-1.5">
+                <label className="font-mono text-[0.62rem] text-white/30 tracking-widest uppercase block">
+                  Email
+                </label>
                 <input
                   {...register('email', { required: true, pattern: /^\S+@\S+\.\S+$/ })}
                   placeholder="your@email.com"
-                  className={`input-field ${errors.email ? 'border-neon-pink/35' : ''}`}
+                  className={`input-field ${errors.email ? 'border-[rgba(255,0,128,0.4)]' : ''}`}
                 />
                 {errors.email && (
-                  <p className="font-mono text-[11px] text-neon-pink/70 pl-1">Valid email required</p>
+                  <p className="font-mono text-[0.65rem] text-[var(--neon-pink)]">Valid email required</p>
                 )}
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
+              <label className="font-mono text-[0.62rem] text-white/30 tracking-widest uppercase block">
+                Subject
+              </label>
               <input
                 {...register('subject', { required: true })}
-                placeholder="Subject"
-                className={`input-field ${errors.subject ? 'border-neon-pink/35' : ''}`}
+                placeholder="Project proposal / Internship / Collaboration"
+                className={`input-field ${errors.subject ? 'border-[rgba(255,0,128,0.4)]' : ''}`}
               />
-              {errors.subject && (
-                <p className="font-mono text-[11px] text-neon-pink/70 pl-1">Required</p>
-              )}
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
+              <label className="font-mono text-[0.62rem] text-white/30 tracking-widest uppercase block">
+                Message
+              </label>
               <textarea
                 {...register('message', { required: true, minLength: 20 })}
                 placeholder="Tell me about your project or opportunity..."
                 rows={6}
-                className={`input-field resize-none ${errors.message ? 'border-neon-pink/35' : ''}`}
+                className={`input-field resize-none ${errors.message ? 'border-[rgba(255,0,128,0.4)]' : ''}`}
+                style={{ lineHeight: 1.75 }}
               />
               {errors.message && (
-                <p className="font-mono text-[11px] text-neon-pink/70 pl-1">Min 20 characters</p>
+                <p className="font-mono text-[0.65rem] text-[var(--neon-pink)]">Min 20 characters required</p>
               )}
             </div>
 
             <button
               type="submit"
               disabled={sending}
-              className="w-full py-3.5 rounded-xl font-mono text-sm font-medium
-                         transition-all duration-300 relative overflow-hidden"
+              className="btn-primary justify-center"
               style={{
-                background: 'rgba(255,0,128,0.07)',
-                border: '1px solid rgba(255,0,128,0.3)',
-                color: 'var(--neon-pink)',
-              }}
-              onMouseEnter={e => {
-                if (sending) return
-                const el = e.currentTarget
-                el.style.background = 'rgba(255,0,128,0.14)'
-                el.style.boxShadow = '0 0 24px rgba(255,0,128,0.3)'
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget
-                el.style.background = 'rgba(255,0,128,0.07)'
-                el.style.boxShadow = ''
+                paddingTop: '0.875rem',
+                paddingBottom: '0.875rem',
+                opacity: sending ? 0.5 : 1,
+                cursor: sending ? 'not-allowed' : 'pointer',
               }}
             >
-              {sending ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-3 h-3 rounded-full border border-neon-pink/50 border-t-neon-pink animate-spin" />
-                  Sending...
-                </span>
-              ) : (
-                '> Send Message →'
-              )}
+              {sending ? '> Sending...' : '> Send Message →'}
             </button>
           </form>
         </div>

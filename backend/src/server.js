@@ -1,13 +1,13 @@
 require('dotenv').config();
 
 const express = require('express');
-const cors    = require('cors');
-const helmet  = require('helmet');
-const morgan  = require('morgan');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
-const connectDB   = require('./config/db');
-const constants   = require('./config/constants');
+const connectDB = require('./config/db');
+const constants = require('./config/constants');
 
 // ─── Initialize App ───────────────────────────────────────────
 const app = express();
@@ -23,7 +23,6 @@ app.use(cors({
     constants.FRONTEND_URL,
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://krushna-portfolio-eight.vercel.app',
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -75,14 +74,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ─── API Routes ───────────────────────────────────────────────
-app.use('/api/auth',           require('./routes/auth.routes'));
-app.use('/api/projects',       require('./routes/project.routes'));
-app.use('/api/skills',         require('./routes/skill.routes'));
-app.use('/api/certifications', require('./routes/cert.routes'));
-app.use('/api/contact',        require('./routes/contact.routes'));
-app.use('/api/analytics',      require('./routes/analytics.routes'));
-app.use('/api/config',         require('./routes/config.routes'));
+// ─── API Routes (we wire these in Phase 3) ───────────────────
+// app.use('/api/auth',         require('./routes/auth.routes'));
+// app.use('/api/projects',     require('./routes/project.routes'));
+// app.use('/api/skills',       require('./routes/skill.routes'));
+// app.use('/api/certifications', require('./routes/cert.routes'));
+// app.use('/api/contact',      require('./routes/contact.routes'));
+// app.use('/api/analytics',    require('./routes/analytics.routes'));
+// app.use('/api/admin',        require('./routes/admin.routes'));
 
 // ─── 404 Handler ──────────────────────────────────────────────
 app.use('*path', (req, res) => {
@@ -95,9 +94,13 @@ app.use('*path', (req, res) => {
 // ─── Global Error Handler ─────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('❌ Error:', err.stack);
-  res.status(err.statusCode || 500).json({
+
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+
+  res.status(statusCode).json({
     success: false,
-    message: err.message || 'Internal Server Error',
+    message,
     ...(constants.NODE_ENV === 'development' && { stack: err.stack }),
   });
 });
@@ -106,10 +109,9 @@ app.use((err, req, res, next) => {
 const PORT = constants.PORT;
 app.listen(PORT, () => {
   console.log('\n────────────────────────────────────────');
-  console.log(`🚀 Server running on port     ${PORT}`);
-  console.log(`🌍 Environment:               ${constants.NODE_ENV}`);
-  console.log(`📡 API Base:   http://localhost:${PORT}/api`);
-  console.log(`❤️  Health:    http://localhost:${PORT}/api/health`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${constants.NODE_ENV}`);
+  console.log(`📡 API Base: http://localhost:${PORT}/api`);
   console.log('────────────────────────────────────────\n');
 });
 
