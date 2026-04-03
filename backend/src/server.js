@@ -74,14 +74,13 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ─── API Routes (we wire these in Phase 3) ───────────────────
-// app.use('/api/auth',         require('./routes/auth.routes'));
-// app.use('/api/projects',     require('./routes/project.routes'));
-// app.use('/api/skills',       require('./routes/skill.routes'));
-// app.use('/api/certifications', require('./routes/cert.routes'));
-// app.use('/api/contact',      require('./routes/contact.routes'));
-// app.use('/api/analytics',    require('./routes/analytics.routes'));
-// app.use('/api/admin',        require('./routes/admin.routes'));
+app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/projects', require('./routes/project.routes'));
+app.use('/api/skills', require('./routes/skill.routes'));
+app.use('/api/certifications', require('./routes/cert.routes'));
+app.use('/api/contact', require('./routes/contact.routes'));
+app.use('/api/analytics', require('./routes/analytics.routes'));
+app.use('/api/config', require('./routes/config.routes'));
 
 // ─── 404 Handler ──────────────────────────────────────────────
 app.use('*path', (req, res) => {
