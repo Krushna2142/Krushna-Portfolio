@@ -1,6 +1,11 @@
 import axios from 'axios'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+// 🔥 NEVER fallback to localhost in production
+const API_URL = process.env.NEXT_PUBLIC_API_URL as string
+
+if (!API_URL) {
+  throw new Error('❌ NEXT_PUBLIC_API_URL is not defined')
+}
 
 const api = axios.create({
   baseURL: API_URL,
@@ -8,7 +13,7 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// Attach JWT token on every request if present
+// ── Request Interceptor ──────────────────────────────────────
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('admin_token')
@@ -17,14 +22,17 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Handle 401 — redirect to admin login
+// ── Response Interceptor ─────────────────────────────────────
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    console.error('❌ API ERROR:', err?.response?.data || err.message)
+
     if (err.response?.status === 401 && typeof window !== 'undefined') {
       localStorage.removeItem('admin_token')
       window.location.href = '/admin/login'
     }
+
     return Promise.reject(err)
   }
 )
@@ -39,42 +47,42 @@ export const portfolioApi = {
   trackVisit:        (data: object) => api.post('/analytics/track', data),
 }
 
-// ── Admin Endpoints ─────────────────────────────────────────
+// ── Admin Endpoints (FIXED PATHS) ────────────────────────────
 export const adminApi = {
   // Auth
   login: (email: string, password: string) =>
     api.post('/auth/login', { email, password }),
 
   // Projects
-  getProjects:    () => api.get('/admin/projects'),
-  createProject:  (data: object) => api.post('/admin/projects', data),
-  updateProject:  (id: string, data: object) => api.put(`/admin/projects/${id}`, data),
-  deleteProject:  (id: string) => api.delete(`/admin/projects/${id}`),
+  getProjects:    () => api.get('/projects/admin'),
+  createProject:  (data: object) => api.post('/projects', data),
+  updateProject:  (id: string, data: object) => api.put(`/projects/${id}`, data),
+  deleteProject:  (id: string) => api.delete(`/projects/${id}`),
 
   // Skills
-  getSkills:   () => api.get('/admin/skills'),
-  createSkill: (data: object) => api.post('/admin/skills', data),
-  updateSkill: (id: string, data: object) => api.put(`/admin/skills/${id}`, data),
-  deleteSkill: (id: string) => api.delete(`/admin/skills/${id}`),
+  getSkills:   () => api.get('/skills/admin'),
+  createSkill: (data: object) => api.post('/skills', data),
+  updateSkill: (id: string, data: object) => api.put(`/skills/${id}`, data),
+  deleteSkill: (id: string) => api.delete(`/skills/${id}`),
 
   // Certifications
-  getCerts:    () => api.get('/admin/certifications'),
-  createCert:  (data: object) => api.post('/admin/certifications', data),
-  updateCert:  (id: string, data: object) => api.put(`/admin/certifications/${id}`, data),
-  deleteCert:  (id: string) => api.delete(`/admin/certifications/${id}`),
+  getCerts:    () => api.get('/certifications/admin'),
+  createCert:  (data: object) => api.post('/certifications', data),
+  updateCert:  (id: string, data: object) => api.put(`/certifications/${id}`, data),
+  deleteCert:  (id: string) => api.delete(`/certifications/${id}`),
 
   // Contact
-  getMessages: () => api.get('/admin/contact'),
-  markRead:    (id: string) => api.patch(`/admin/contact/${id}/read`),
-  deleteMsg:   (id: string) => api.delete(`/admin/contact/${id}`),
+  getMessages: () => api.get('/contact'),
+  markRead:    (id: string) => api.patch(`/contact/${id}/read`),
+  deleteMsg:   (id: string) => api.delete(`/contact/${id}`),
 
   // Analytics
-  getAnalytics: () => api.get('/admin/analytics'),
+  getAnalytics: () => api.get('/analytics/dashboard'),
 
   // Config
-  getConfig:    () => api.get('/admin/config'),
+  getConfig:    () => api.get('/config'),
   updateConfig: (key: string, value: unknown) =>
-    api.patch(`/admin/config/${key}`, { value }),
+    api.patch(`/config/${key}`, { value }),
 }
 
 export default api
