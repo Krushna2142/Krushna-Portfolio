@@ -5,13 +5,25 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Krushna Pokharkar — Full-Stack Developer & AI Engineer',
   description: 'Full-Stack Software Developer specializing in Agentic AI systems, MERN stack, Java Spring Boot. Building autonomous reasoning pipelines. Open to SDE/AI Intern roles.',
+  
   keywords: [
     'Krushna Pokharkar', 'Full Stack Developer', 'AI Engineer',
     'MERN Stack', 'React', 'Next.js', 'Spring Boot', 'Agentic AI',
     'JobCrawler', 'Portfolio', 'Pune', 'AISSMS',
   ],
-  
+
   authors: [{ name: 'Krushna Pokharkar' }],
+
+  icons: {
+    icon: [
+      { url: '/logo2.png', sizes: '32x32', type: 'image/png' },
+      { url: '/logo2.png', sizes: '192x192', type: 'image/png' },
+    ],
+    shortcut: ['/logo2.png'],
+    apple: [
+      { url: '/logo2.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 
   openGraph: {
     title: 'Krushna Pokharkar — Full-Stack Developer & AI Engineer',
