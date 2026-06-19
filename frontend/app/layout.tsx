@@ -1,7 +1,7 @@
 import './globals.css'
 import { Inter, Space_Grotesk } from 'next/font/google'
-import ClientEffects from '@/components/ClientEffects'
-import SmoothScroll from '@/components/SmoothScroll'
+import ClientEffects from '@/components/efffects/ClientEffects'
+import SmoothScroll from '@/components/layout/SmoothScroll'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' })

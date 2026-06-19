@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import axios from 'axios'
-import config from '../../tailwind.config'
+import config from '../../../tailwind.config'
 
 const socialLinks = [
   { name: 'GitHub', url: (config as any).social_github || 'https://github.com', icon: '⚡' },

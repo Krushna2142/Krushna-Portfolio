@@ -1,26 +1,10 @@
-// ── API Response ────────────────────────────────────────────
-export interface ApiResponse<T> {
-  success: boolean
-  data: T
-  message?: string
-  pagination?: Pagination
-}
-
-export interface Pagination {
-  page: number
-  limit: number
-  total: number
-  pages: number
-}
-
-// ── Models ──────────────────────────────────────────────────
 export interface Project {
-  _id: string
+  id: string
   title: string
   description: string
   longDescription?: string
   techStack: string[]
-  category: 'AI' | 'Web' | 'Mobile' | 'Backend' | 'Other'
+  category: string
   thumbnail?: string
   images?: string[]
   liveUrl?: string
@@ -28,22 +12,31 @@ export interface Project {
   featured: boolean
   visible: boolean
   order: number
-  createdAt: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface Skill {
-  _id: string
+  id: string
   name: string
-  category: 'Frontend' | 'Backend' | 'Mobile' | 'Database' |
-            'DevOps' | 'AI/ML' | 'Languages' | 'Tools' | 'Soft Skills'
+  category: string
   proficiency: number
   icon?: string
+  color?: string
+  level?: string
+  yearsExperience?: number
+  description?: string
+  linkUrl?: string
+  featured: boolean
   visible: boolean
   order: number
+  marqueeRow: number
+  created_at?: string
+  updated_at?: string
 }
 
 export interface Certification {
-  _id: string
+  id: string
   title: string
   issuer: string
   issueDate?: string
@@ -53,10 +46,12 @@ export interface Certification {
   thumbnail?: string
   visible: boolean
   order: number
+  created_at?: string
+  updated_at?: string
 }
 
-export interface ContactMessage {
-  _id: string
+export interface Contact {
+  id: string
   name: string
   email: string
   subject: string
@@ -64,25 +59,7 @@ export interface ContactMessage {
   isRead: boolean
   isReplied: boolean
   repliedAt?: string
-  createdAt: string
+  ipAddress?: string
+  created_at: string
+  updated_at?: string
 }
-
-export interface SiteConfig {
-  key: string
-  value: boolean | string | number
-  description?: string
-}
-
-export interface Analytics {
-  totalVisits: number
-  uniqueVisitors: number
-  todayVisits: number
-  deviceBreakdown: { desktop: number; mobile: number; tablet: number }
-  topPages: { page: string; count: number }[]
-  visitsByDay: { date: string; count: number }[]
-}
-
-// FIX: admin/page.tsx imported AnalyticsDashboard which didn't exist.
-// Exporting as an alias of Analytics so the import resolves without
-// changing the admin page's import statement.
-export type AnalyticsDashboard = Analytics

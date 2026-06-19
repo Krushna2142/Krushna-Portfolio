@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import ImageCarousel from '@/components/ImageCarousel'
+import ImageCarousel from '@/components/ui/ImageCarousel'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 

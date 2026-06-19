@@ -1,7 +1,7 @@
 'use client'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import ProjectCard from './ProjectCard'
+import ProjectCard from '@/components/ui/ProjectCard'
 import axios from 'axios'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
