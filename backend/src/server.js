@@ -6,14 +6,26 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
-const connectDB = require('./config/db');
 const constants = require('./config/constants');
+const supabase = require('./config/supabase');
 
 // ─── Initialize App ───────────────────────────────────────────
 const app = express();
 
-// ─── Connect Database ─────────────────────────────────────────
-connectDB();
+// ─── Verify Supabase Connection ───────────────────────────────
+(async () => {
+  try {
+    const { data, error } = await supabase.from('admins').select('id').limit(1);
+    if (error) {
+      console.error('❌ Supabase Connection Error:', error.message);
+      process.exit(1);
+    }
+    console.log('✅ Supabase Connected Successfully');
+  } catch (error) {
+    console.error('❌ Supabase Connection Error:', error.message);
+    process.exit(1);
+  }
+})();
 
 // ─── Security Middleware ──────────────────────────────────────
 app.use(helmet());
@@ -64,16 +76,29 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    status: 'healthy',
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    timestamp: new Date().toISOString(),
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Check Supabase connection
+    const { error } = await supabase.from('admins').select('id').limit(1);
+    
+    res.json({
+      success: true,
+      status: error ? 'degraded' : 'healthy',
+      database: error ? 'disconnected' : 'connected',
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      status: 'error',
+      message: err.message,
+    });
+  }
 });
 
+// ─── Routes ───────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/projects', require('./routes/project.routes'));
 app.use('/api/skills', require('./routes/skill.routes'));
@@ -111,6 +136,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${constants.NODE_ENV}`);
   console.log(`📡 API Base: http://localhost:${PORT}/api`);
+  console.log('🗄️  Database: Supabase PostgreSQL');
   console.log('────────────────────────────────────────\n');
 });
 

@@ -1,4 +1,4 @@
-const Contact = require('../models/Contact.model');
+const dbService = require('../services/db.service');
 const nodemailer = require('nodemailer');
 const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = require('../config/constants');
 
@@ -15,12 +15,11 @@ exports.send = async (req, res) => {
     if (!name || !email || !subject || !message)
       return res.status(400).json({ success: false, message: 'All fields required' });
 
-    const contact = await Contact.create({
+    const contact = await dbService.create('contacts', {
       name, email, subject, message,
-      ipAddress: req.ip,
+      ip_address: req.ip,
     });
 
-    // Send notification email to admin
     await transporter.sendMail({
       from: EMAIL_USER,
       to: EMAIL_USER,
@@ -31,31 +30,40 @@ exports.send = async (req, res) => {
         <p><strong>Subject:</strong> ${subject}</p>
         <p><strong>Message:</strong><br/>${message}</p>
       `,
-    }).catch(() => {}); // Non-blocking — don't fail if email fails
+    }).catch(() => {});
 
     res.status(201).json({ success: true, message: 'Message sent successfully', data: contact });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  } catch (err) { 
+    res.status(500).json({ success: false, message: err.message }); 
+  }
 };
 
 exports.getAll = async (req, res) => {
   try {
-    const messages = await Contact.find().sort({ createdAt: -1 });
+    const messages = await dbService.findAll('contacts', { 
+      sort: 'created_at',
+      order: 'desc'
+    });
     res.json({ success: true, data: messages });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  } catch (err) { 
+    res.status(500).json({ success: false, message: err.message }); 
+  }
 };
 
 exports.markRead = async (req, res) => {
   try {
-    const msg = await Contact.findByIdAndUpdate(
-      req.params.id, { isRead: true }, { new: true }
-    );
+    const msg = await dbService.update('contacts', req.params.id, { is_read: true });
     res.json({ success: true, data: msg });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  } catch (err) { 
+    res.status(500).json({ success: false, message: err.message }); 
+  }
 };
 
 exports.remove = async (req, res) => {
   try {
-    await Contact.findByIdAndDelete(req.params.id);
+    await dbService.delete('contacts', req.params.id);
     res.json({ success: true, message: 'Message deleted' });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  } catch (err) { 
+    res.status(500).json({ success: false, message: err.message }); 
+  }
 };

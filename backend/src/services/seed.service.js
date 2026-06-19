@@ -1,13 +1,9 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
-const Admin = require('../models/Admin.model');
-const Skill = require('../models/Skill.model');
-const Certification = require('../models/Certification.model');
-const Project = require('../models/Project.model');
-const SiteConfig = require('../models/SiteConfig.model');
+const bcrypt = require('bcryptjs');
+const dbService = require('./db.service');
+const supabase = require('../config/supabase');
 
 const SKILLS = [
-  // Frontend
   { name: 'React.js', category: 'Frontend', proficiency: 90 },
   { name: 'Next.js', category: 'Frontend', proficiency: 85 },
   { name: 'TypeScript', category: 'Frontend', proficiency: 80 },
@@ -18,35 +14,29 @@ const SKILLS = [
   { name: 'Framer Motion', category: 'Frontend', proficiency: 75 },
   { name: 'Flutter', category: 'Mobile', proficiency: 80 },
   { name: 'React Native', category: 'Mobile', proficiency: 75 },
-  // Backend
   { name: 'Node.js', category: 'Backend', proficiency: 88 },
   { name: 'Express.js', category: 'Backend', proficiency: 88 },
   { name: 'Spring Boot', category: 'Backend', proficiency: 80 },
   { name: 'FastAPI', category: 'Backend', proficiency: 78 },
   { name: 'Django', category: 'Backend', proficiency: 75 },
   { name: 'Flask', category: 'Backend', proficiency: 78 },
-  // Languages
   { name: 'JavaScript', category: 'Languages', proficiency: 92 },
   { name: 'Java', category: 'Languages', proficiency: 85 },
   { name: 'Python', category: 'Languages', proficiency: 85 },
   { name: 'C++', category: 'Languages', proficiency: 75 },
-  // Database
   { name: 'MongoDB', category: 'Database', proficiency: 85 },
   { name: 'PostgreSQL', category: 'Database', proficiency: 78 },
   { name: 'Firebase', category: 'Database', proficiency: 80 },
   { name: 'SQL', category: 'Database', proficiency: 80 },
-  // DevOps
   { name: 'Docker', category: 'DevOps', proficiency: 78 },
   { name: 'Git / GitHub', category: 'DevOps', proficiency: 90 },
   { name: 'AWS', category: 'DevOps', proficiency: 72 },
   { name: 'GCP', category: 'DevOps', proficiency: 70 },
-  // AI/ML
   { name: 'OpenAI API', category: 'AI/ML', proficiency: 85 },
   { name: 'LLM / Agentic AI', category: 'AI/ML', proficiency: 82 },
   { name: 'Machine Learning', category: 'AI/ML', proficiency: 78 },
   { name: 'NLP', category: 'AI/ML', proficiency: 75 },
   { name: 'Spring AI', category: 'AI/ML', proficiency: 72 },
-  // Tools
   { name: 'Figma', category: 'Tools', proficiency: 80 },
   { name: 'Postman', category: 'Tools', proficiency: 88 },
   { name: 'Jira', category: 'Tools', proficiency: 78 },
@@ -57,19 +47,19 @@ const CERTIFICATIONS = [
   {
     title: 'Artificial Intelligence Fundamentals',
     issuer: 'IBM / Coursera',
-    credentialUrl: '',
+    credential_url: '',
     visible: true,
   },
   {
     title: 'Google AI Essentials',
     issuer: 'Google',
-    credentialUrl: '',
+    credential_url: '',
     visible: true,
   },
   {
     title: 'Deloitte Australia - Data Analytics Job Simulation',
     issuer: 'Deloitte / Forage',
-    credentialUrl: '',
+    credential_url: '',
     visible: true,
   },
 ];
@@ -78,38 +68,38 @@ const PROJECTS = [
   {
     title: 'JobCrawler.ai',
     description: 'Agentic AI system for job hunting — resume parsing, job crawling, semantic matching, skill gap detection, and adaptive mock interviews.',
-    techStack: ['Python', 'FastAPI', 'OpenAI API', 'MongoDB', 'React.js', 'Docker', 'GCP'],
+    tech_stack: ['Python', 'FastAPI', 'OpenAI API', 'MongoDB', 'React.js', 'Docker', 'GCP'],
     category: 'AI',
     featured: true,
-    liveUrl: '',
-    githubUrl: '',
+    live_url: '',
+    github_url: '',
   },
   {
     title: 'AI Powered Intelligent Workflow Automation Platform',
     description: 'Enterprise-grade workflow automation platform powered by AI agents capable of reasoning, planning, and executing multi-step business tasks.',
-    techStack: ['Next.js', 'Node.js', 'OpenAI API', 'MongoDB', 'Docker', 'AWS'],
+    tech_stack: ['Next.js', 'Node.js', 'OpenAI API', 'MongoDB', 'Docker', 'AWS'],
     category: 'AI',
     featured: true,
-    liveUrl: '',
-    githubUrl: '',
+    live_url: '',
+    github_url: '',
   },
   {
     title: 'AI-Powered Customer Query Ticketing Assistant',
     description: 'Intelligent ticketing system with NLP-based query classification, automated routing, and AI-assisted response generation.',
-    techStack: ['Java', 'Spring Boot', 'FastAPI', 'MongoDB', 'React.js'],
+    tech_stack: ['Java', 'Spring Boot', 'FastAPI', 'MongoDB', 'React.js'],
     category: 'AI',
     featured: true,
-    liveUrl: '',
-    githubUrl: '',
+    live_url: '',
+    github_url: '',
   },
   {
     title: 'Library Management System',
     description: 'Full-featured library management system with book tracking, member management, and fine calculation.',
-    techStack: ['Java', 'React Native', 'MongoDB', 'AWS'],
+    tech_stack: ['Java', 'React Native', 'MongoDB', 'AWS'],
     category: 'Backend',
     featured: false,
-    liveUrl: '',
-    githubUrl: '',
+    live_url: '',
+    github_url: '',
   },
 ];
 
@@ -126,41 +116,50 @@ const SITE_CONFIG = [
 ];
 
 const seed = async () => {
-  await mongoose.connect(process.env.MONGODB_URI);
-  console.log('Connected — seeding database...');
+  console.log('🌱 Starting seed process...\n');
 
   // Admin
-  const existingAdmin = await Admin.findOne({ email: process.env.ADMIN_EMAIL });
-  if (!existingAdmin) {
-    await Admin.create({
+  const existingAdmins = await dbService.findAll('admins', { filter: { email: process.env.ADMIN_EMAIL } });
+  if (existingAdmins.length === 0) {
+    const password_hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
+    await dbService.create('admins', {
       email: process.env.ADMIN_EMAIL,
-      password: process.env.ADMIN_PASSWORD,
+      password_hash,
     });
     console.log('✅ Admin created');
   }
 
   // Skills
-  await Skill.deleteMany({});
-  await Skill.insertMany(SKILLS.map((s, i) => ({ ...s, order: i })));
+  await supabase.from('skills').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const skillsWithOrder = SKILLS.map((s, i) => ({ ...s, order_index: i }));
+  await supabase.from('skills').insert(skillsWithOrder);
   console.log(`✅ ${SKILLS.length} skills seeded`);
 
   // Certifications
-  await Certification.deleteMany({});
-  await Certification.insertMany(CERTIFICATIONS.map((c, i) => ({ ...c, order: i })));
+  await supabase.from('certifications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const certsWithOrder = CERTIFICATIONS.map((c, i) => ({ ...c, order_index: i }));
+  await supabase.from('certifications').insert(certsWithOrder);
   console.log(`✅ ${CERTIFICATIONS.length} certifications seeded`);
 
   // Projects
-  await Project.deleteMany({});
-  await Project.insertMany(PROJECTS.map((p, i) => ({ ...p, order: i })));
+  await supabase.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const projectsWithOrder = PROJECTS.map((p, i) => ({ ...p, order_index: i }));
+  await supabase.from('projects').insert(projectsWithOrder);
   console.log(`✅ ${PROJECTS.length} projects seeded`);
 
   // Site Config
   for (const config of SITE_CONFIG) {
-    await SiteConfig.findOneAndUpdate(
-      { key: config.key },
-      config,
-      { upsert: true, new: true }
-    );
+    const { data: existing } = await supabase
+      .from('site_configs')
+      .select()
+      .eq('key', config.key)
+      .single();
+    
+    if (existing) {
+      await dbService.update('site_configs', existing.id, config);
+    } else {
+      await dbService.create('site_configs', config);
+    }
   }
   console.log('✅ Site config seeded');
 
