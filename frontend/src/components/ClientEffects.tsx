@@ -14,6 +14,7 @@ export default function ClientEffects({ children }: { children: React.ReactNode 
 
   return (
     <>
+      {/* Keep the developer vibe! */}
       <CodeBackground />
       <CustomCursor />
       <JetonTransition>

@@ -25,6 +25,18 @@ export default function ProjectsAdmin() {
     order: 0,
   })
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+    }
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [showModal])
+
   const fetchProjects = async () => {
     try {
       const res = await projectsApi.getAll()
@@ -136,25 +148,6 @@ export default function ProjectsAdmin() {
     }
   }
 
-  const addImage = (url: string) => {
-    if (url && !formData.images.includes(url)) {
-      setFormData({ ...formData, images: [...formData.images, url] })
-    }
-  }
-
-  const removeImage = (index: number) => {
-    setFormData({ ...formData, images: formData.images.filter((_, i) => i !== index) })
-  }
-
-  const moveImage = (index: number, direction: 'left' | 'right') => {
-    const newImages = [...formData.images]
-    const newIndex = direction === 'left' ? index - 1 : index + 1
-    if (newIndex < 0 || newIndex >= newImages.length) return
-    
-    ;[newImages[index], newImages[newIndex]] = [newImages[newIndex], newImages[index]]
-    setFormData({ ...formData, images: newImages })
-  }
-
   if (loading) return <div className="text-[var(--accent)] animate-pulse">Loading...</div>
 
   return (
@@ -195,28 +188,20 @@ export default function ProjectsAdmin() {
                   {!project.visible && (
                     <span className="px-2 py-1 rounded bg-red-500/20 text-red-400 text-xs">Hidden</span>
                   )}
-                  <span className="px-2 py-1 rounded bg-blue-500/20 text-blue-400 text-xs">
-                    {(project.images || []).length} images
-                  </span>
                 </div>
                 <p className="text-[var(--muted)] text-sm line-clamp-2">{project.description}</p>
-                <div className="flex gap-2 mt-3 flex-wrap">
-                  {(project.techStack || []).slice(0, 6).map((tech: string) => (
-                    <span key={tech} className="px-2 py-1 rounded bg-white/5 text-xs text-[var(--muted)]">{tech}</span>
-                  ))}
-                </div>
               </div>
               
               <div className="flex flex-col gap-2">
                 <div className="flex gap-2">
-                  <button onClick={() => moveProject(project, 'up')} className="px-3 py-1 rounded bg-white/5 text-white/60 hover:bg-white/10 text-sm" title="Move up">↑</button>
-                  <button onClick={() => moveProject(project, 'down')} className="px-3 py-1 rounded bg-white/5 text-white/60 hover:bg-white/10 text-sm" title="Move down">↓</button>
+                  <button onClick={() => moveProject(project, 'up')} className="px-3 py-1 rounded bg-white/5 text-white/60 hover:bg-white/10 text-sm">↑</button>
+                  <button onClick={() => moveProject(project, 'down')} className="px-3 py-1 rounded bg-white/5 text-white/60 hover:bg-white/10 text-sm">↓</button>
                 </div>
                 <button onClick={() => toggleFeatured(project)} className={`px-3 py-1 rounded text-xs ${project.featured ? 'bg-[var(--accent)]/20 text-[var(--accent)]' : 'bg-white/5 text-white/60'}`}>
                   {project.featured ? '⭐ Featured' : '☆ Feature'}
                 </button>
                 <button onClick={() => toggleVisible(project)} className={`px-3 py-1 rounded text-xs ${project.visible ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                  {project.visible ? '👁️ Visible' : '🚫 Hidden'}
+                  {project.visible ? '👁️ Visible' : ' Hidden'}
                 </button>
                 <button onClick={() => handleEdit(project)} className="px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 text-sm">Edit</button>
                 <button onClick={() => handleDelete(project.id)} className="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 text-sm">Delete</button>
@@ -226,25 +211,44 @@ export default function ProjectsAdmin() {
         ))}
       </div>
 
+      {/* MODAL - FIXED SCROLL */}
       <AnimatePresence>
         {showModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
             onClick={() => setShowModal(false)}
           >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+            
+            {/* Modal Container */}
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-4xl my-8 p-8 rounded-2xl backdrop-blur-xl bg-[#0a0a0a] border border-white/10 max-h-[90vh] overflow-y-auto"
+              className="relative w-full max-w-4xl max-h-[90vh] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             >
-              <h2 className="text-2xl font-bold mb-6">{editingProject ? 'Edit Project' : 'New Project'}</h2>
-              
-              <div className="space-y-4">
+              {/* Header - Fixed at top */}
+              <div className="flex-shrink-0 p-6 border-b border-white/10 bg-[#0a0a0a]">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">
+                    {editingProject ? '✏️ Edit Project' : '✨ New Project'}
+                  </h2>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Title *</label>
                   <input
@@ -301,7 +305,6 @@ export default function ProjectsAdmin() {
                   </div>
                 </div>
 
-                {/* Thumbnail Upload */}
                 <div>
                   <label className="block text-sm font-medium mb-2">Thumbnail (Main Image)</label>
                   <ImageUpload
@@ -311,16 +314,14 @@ export default function ProjectsAdmin() {
                   />
                 </div>
 
-                {/* Additional Images */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Additional Images ({formData.images.length})
                   </label>
                   <p className="text-xs text-[var(--muted)] mb-3">
-                    These images will scroll horizontally on the project detail page (Amazon-style)
+                    These images will scroll horizontally on the project detail page
                   </p>
                   
-                  {/* Image Gallery Preview */}
                   {formData.images.length > 0 && (
                     <div className="grid grid-cols-4 gap-3 mb-4">
                       {formData.images.map((img, idx) => (
@@ -328,16 +329,30 @@ export default function ProjectsAdmin() {
                           <img src={img} alt={`Image ${idx + 1}`} className="w-full h-24 object-cover" />
                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
                             <button
-                              onClick={() => moveImage(idx, 'left')}
+                              onClick={() => {
+                                const newImages = [...formData.images]
+                                if (idx > 0) {
+                                  [newImages[idx - 1], newImages[idx]] = [newImages[idx], newImages[idx - 1]]
+                                  setFormData({ ...formData, images: newImages })
+                                }
+                              }}
                               disabled={idx === 0}
                               className="p-1 rounded bg-white/20 hover:bg-white/40 disabled:opacity-30"
                             >←</button>
                             <button
-                              onClick={() => removeImage(idx)}
+                              onClick={() => {
+                                setFormData({ ...formData, images: formData.images.filter((_, i) => i !== idx) })
+                              }}
                               className="p-1 rounded bg-red-500/80 hover:bg-red-500"
                             >✕</button>
                             <button
-                              onClick={() => moveImage(idx, 'right')}
+                              onClick={() => {
+                                const newImages = [...formData.images]
+                                if (idx < newImages.length - 1) {
+                                  [newImages[idx], newImages[idx + 1]] = [newImages[idx + 1], newImages[idx]]
+                                  setFormData({ ...formData, images: newImages })
+                                }
+                              }}
                               disabled={idx === formData.images.length - 1}
                               className="p-1 rounded bg-white/20 hover:bg-white/40 disabled:opacity-30"
                             >→</button>
@@ -352,7 +367,11 @@ export default function ProjectsAdmin() {
                   
                   <ImageUpload
                     value=""
-                    onChange={addImage}
+                    onChange={(url) => {
+                      if (url && !formData.images.includes(url)) {
+                        setFormData({ ...formData, images: [...formData.images, url] })
+                      }
+                    }}
                     folder="projects/images"
                   />
                 </div>
@@ -404,7 +423,7 @@ export default function ProjectsAdmin() {
                   >+ Add Technology</button>
                 </div>
 
-                <div className="flex gap-6">
+                <div className="flex gap-6 flex-wrap">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -424,19 +443,22 @@ export default function ProjectsAdmin() {
                     <span>👁️ Visible on website</span>
                   </label>
                 </div>
+              </div>
 
-                <div className="flex gap-3 pt-4 border-t border-white/10">
-                  <button
-                    onClick={handleSave}
-                    className="flex-1 py-3 bg-[var(--accent)] text-black font-bold rounded-xl hover:shadow-[0_0_40px_rgba(0,229,255,0.4)] transition-all"
-                  >
-                    {editingProject ? '💾 Update Project' : '✨ Create Project'}
-                  </button>
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="flex-1 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-all"
-                  >Cancel</button>
-                </div>
+              {/* Footer - Fixed at bottom */}
+              <div className="flex-shrink-0 p-6 border-t border-white/10 bg-[#0a0a0a] flex gap-3">
+                <button
+                  onClick={handleSave}
+                  className="flex-1 py-3 bg-[var(--accent)] text-black font-bold rounded-xl hover:shadow-[0_0_40px_rgba(0,229,255,0.4)] transition-all"
+                >
+                  {editingProject ? '💾 Update Project' : '✨ Create Project'}
+                </button>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-all"
+                >
+                  Cancel
+                </button>
               </div>
             </motion.div>
           </motion.div>

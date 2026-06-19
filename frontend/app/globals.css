@@ -9,11 +9,24 @@
     --muted: #888888;
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     CURSOR FIX - Hide default cursor EVERYWHERE
+     ═══════════════════════════════════════════════════════════════ */
+  *, *::before, *::after {
+    cursor: none !important;
+  }
+
+  /* Show default cursor on mobile/touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    *, *::before, *::after {
+      cursor: auto !important;
+    }
+  }
+
   body {
     background-color: var(--bg);
     color: var(--text);
     font-family: 'Inter', sans-serif;
-    cursor: none;
     overflow-x: hidden;
   }
 
@@ -39,20 +52,20 @@ h1, h2, h3, .font-display {
   letter-spacing: -0.02em;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR STYLING
+   ═══════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
 /* ═══════════════════════════════════════════════════════════════
-   THIS IS THE JETON.COM MAGIC — View Transitions Morph Effect
+   JETON.COM VIEW TRANSITIONS
    ═══════════════════════════════════════════════════════════════ */
-
-/* The old card image morphs OUT */
 ::view-transition-old(project-image-card) {
   animation: morph-out 0.8s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-/* The new detail image morphs IN */
 ::view-transition-new(project-image-detail) {
   animation: morph-in 0.8s cubic-bezier(0.76, 0, 0.24, 1);
 }
@@ -83,7 +96,6 @@ h1, h2, h3, .font-display {
   }
 }
 
-/* Fade the rest of the page content */
 ::view-transition-old(root) {
   animation: fade-out 0.6s cubic-bezier(0.76, 0, 0.24, 1);
 }
@@ -102,40 +114,9 @@ h1, h2, h3, .font-display {
   to { opacity: 1; filter: blur(0px); }
 }
 
-/* Dark mode support for view transitions */
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
-  }
-}
-/* Add to your existing globals.css */
-
-/* Multi-directional page transitions */
-::view-transition-old(root) {
-  animation: 
-    slide-out-top 0.6s cubic-bezier(0.76, 0, 0.24, 1),
-    fade-out 0.6s cubic-bezier(0.76, 0, 0.24, 1);
-}
-
-::view-transition-new(root) {
-  animation: 
-    slide-in-bottom 0.6s cubic-bezier(0.76, 0, 0.24, 1),
-    fade-in 0.6s cubic-bezier(0.76, 0, 0.24, 1);
-}
-
-@keyframes slide-out-top {
-  from { transform: translateY(0) scale(1); }
-  to { transform: translateY(-100%) scale(0.9); }
-}
-
-@keyframes slide-in-bottom {
-  from { transform: translateY(100%) scale(1.1); }
-  to { transform: translateY(0) scale(1); }
-}
-
-/* Diamond wipe effect */
+/* ═══════════════════════════════════════════════════════════════
+   MULTI-DIRECTIONAL TRANSITIONS
+   ═══════════════════════════════════════════════════════════════ */
 .diamond-wipe {
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
   animation: diamond-expand 0.8s cubic-bezier(0.76, 0, 0.24, 1);
@@ -152,96 +133,44 @@ h1, h2, h3, .font-display {
   }
 }
 
-/* Circular reveal from corners */
 .corner-reveal {
   animation: corner-expand 0.7s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 @keyframes corner-expand {
-  from { 
-    clip-path: circle(0% at 0% 0%);
-  }
-  to { 
-    clip-path: circle(150% at 0% 0%);
-  }
+  from { clip-path: circle(0% at 0% 0%); }
+  to { clip-path: circle(150% at 0% 0%); }
 }
 
-/* Staggered panel transitions */
-.panel-top {
-  animation: panel-top-in 0.6s cubic-bezier(0.76, 0, 0.24, 1);
-}
+.panel-top { animation: panel-top-in 0.6s cubic-bezier(0.76, 0, 0.24, 1); }
+.panel-bottom { animation: panel-bottom-in 0.6s cubic-bezier(0.76, 0, 0.24, 1) 0.1s; }
+.panel-left { animation: panel-left-in 0.7s cubic-bezier(0.76, 0, 0.24, 1) 0.15s; }
+.panel-right { animation: panel-right-in 0.7s cubic-bezier(0.76, 0, 0.24, 1) 0.2s; }
 
-.panel-bottom {
-  animation: panel-bottom-in 0.6s cubic-bezier(0.76, 0, 0.24, 1) 0.1s;
-}
+@keyframes panel-top-in { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+@keyframes panel-bottom-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes panel-left-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes panel-right-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-.panel-left {
-  animation: panel-left-in 0.7s cubic-bezier(0.76, 0, 0.24, 1) 0.15s;
-}
-
-.panel-right {
-  animation: panel-right-in 0.7s cubic-bezier(0.76, 0, 0.24, 1) 0.2s;
-}
-
-@keyframes panel-top-in {
-  from { transform: translateY(-100%); }
-  to { transform: translateY(0); }
-}
-
-@keyframes panel-bottom-in {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-@keyframes panel-left-in {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-
-@keyframes panel-right-in {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
-
-/* Rotation + Scale morph */
 .morph-rotate {
   animation: morph-rotate-in 0.9s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 @keyframes morph-rotate-in {
-  from { 
-    transform: rotate(-180deg) scale(0);
-    opacity: 0;
-  }
-  50% {
-    transform: rotate(-90deg) scale(1.2);
-    opacity: 1;
-  }
-  to { 
-    transform: rotate(0deg) scale(1);
-    opacity: 1;
-  }
+  from { transform: rotate(-180deg) scale(0); opacity: 0; }
+  50% { transform: rotate(-90deg) scale(1.2); opacity: 1; }
+  to { transform: rotate(0deg) scale(1); opacity: 1; }
 }
 
-/* Blur + slide combinations */
 .blur-slide-top {
   animation: blur-slide-top 0.6s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 @keyframes blur-slide-top {
-  from { 
-    filter: blur(20px);
-    transform: translateY(-50px) scale(0.9);
-    opacity: 0;
-  }
-  to { 
-    filter: blur(0);
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
+  from { filter: blur(20px); transform: translateY(-50px) scale(0.9); opacity: 0; }
+  to { filter: blur(0); transform: translateY(0) scale(1); opacity: 1; }
 }
 
-/* Shutter effect - multiple panels */
 .shutter-panel:nth-child(1) { animation: shutter-1 0.5s cubic-bezier(0.76, 0, 0.24, 1); }
 .shutter-panel:nth-child(2) { animation: shutter-2 0.5s cubic-bezier(0.76, 0, 0.24, 1) 0.05s; }
 .shutter-panel:nth-child(3) { animation: shutter-3 0.5s cubic-bezier(0.76, 0, 0.24, 1) 0.1s; }
@@ -252,48 +181,38 @@ h1, h2, h3, .font-display {
 @keyframes shutter-3 { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); } }
 @keyframes shutter-4 { from { transform: scaleX(0); transform-origin: right; } to { transform: scaleX(1); } }
 
-/* Add to the bottom of globals.css */
+/* ═══════════════════════════════════════════════════════════════
+   PERFORMANCE OPTIMIZATIONS
+   ═══════════════════════════════════════════════════════════════ */
 .project-image-card,
 .project-image-detail,
+.project-card,
+.skill-card,
+.category-card,
 .group {
   will-change: transform, opacity;
-  transform: translateZ(0); /* Forces GPU layer */
+  transform: translateZ(0);
 }
-/* Disable blur on admin pages */
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN PAGE FIXES - No blur/filters
+   ═══════════════════════════════════════════════════════════════ */
 .admin-page,
-.admin-page * {
-  filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-
-/* Ensure admin login is sharp */
-body:has(.no-blur) {
-  filter: none !important;
-}
-
+.admin-page *,
+.admin-no-effects,
+.admin-no-effects *,
+body:has(.admin-page),
+body:has(.admin-page) *,
+body:has(.no-blur),
 body:has(.no-blur) * {
   filter: none !important;
-  backdrop-filter: none !important;
-}
-.admin-no-effects,
-.admin-no-effects * {
-  filter: none !important;
-  backdrop-filter: none !important;
-}
-/* Disable all blur and filters on admin pages */
-body:has(.admin-page),
-body:has(.admin-page) * {
-  filter: none !important;
-  backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
-.admin-page {
-  filter: none !important;
-  backdrop-filter: none !important;
-}
-/* Fix native select dropdown styling */
+/* ═══════════════════════════════════════════════════════════════
+   FORM ELEMENTS
+   ═══════════════════════════════════════════════════════════════ */
 select {
   background-color: #111 !important;
   color: white !important;
@@ -308,4 +227,27 @@ select option {
 select option:checked {
   background-color: var(--accent) !important;
   color: black !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ACCESSIBILITY & RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .backdrop-blur-xl {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
 }
