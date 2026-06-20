@@ -7,7 +7,7 @@ import config from '../../../tailwind.config'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 const socialLinks = [
   { name: 'GitHub', url: (config as any).social_github || 'https://github.com/krushna2142', icon: '⚡' },
-  { name: 'LinkedIn', url: (config as any).social_linkedin || 'https://linkedin.com/krushna-pokharkar2142', icon: '💼' },
+  { name: 'LinkedIn', url: (config as any).social_linkedin || 'https://www.linkedin.com/in/krushna-pokharkar2142', icon: '💼' },
   { name: 'Twitter', url: (config as any).social_twitter || 'https://x.com/Krushna29223', icon: '' },
 ]
 export default function Contact() {
