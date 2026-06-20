@@ -14,8 +14,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     setMounted(true)
-    // Hide custom cursor on admin pages
-    document.body.style.cursor = 'default'
+    // DON'T hide custom cursor - let it work everywhere
+    // Remove any cursor overrides
+    document.body.style.cursor = 'auto'
     return () => {
       document.body.style.cursor = 'auto'
     }
@@ -28,10 +29,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => window.removeEventListener('popstate', handleRouteChange)
   }, [])
 
-  // Don't show sidebar or custom cursor on auth pages
+  // For auth pages, show minimal layout without sidebar but WITH cursor
   if (isAuthPage) {
     return (
-      <div className="min-h-screen bg-[var(--bg)]" style={{ cursor: 'default' }}>
+      <div className="min-h-screen bg-[var(--bg)]">
         {mounted && <CustomCursor />}
         {children}
       </div>
@@ -39,7 +40,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)]" style={{ cursor: 'default' }}>
+    <div className="min-h-screen bg-[var(--bg)]">
+      {/* Custom Cursor - ALWAYS VISIBLE */}
       {mounted && <CustomCursor />}
       
       {/* Mobile Header */}

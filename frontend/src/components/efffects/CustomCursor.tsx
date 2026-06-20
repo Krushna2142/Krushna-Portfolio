@@ -20,9 +20,10 @@ export default function CustomCursor() {
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-      if (target.closest('button, a, input, [data-cursor-hover]')) {
+      // Check for interactive elements including those in modals/popups
+      if (target.closest('button, a, input, select, textarea, [data-cursor-hover], .cursor-pointer, [role="button"]')) {
         setIsHovering(true)
-        if (target.closest('button, a, [data-cursor-hover]')) {
+        if (target.closest('button, a, [data-cursor-hover], .cursor-pointer, [role="button"]')) {
           setIsClickable(true)
         }
       } else {
@@ -42,9 +43,9 @@ export default function CustomCursor() {
 
   return (
     <>
-      {/* Main cursor dot */}
+      {/* Main cursor dot - ALWAYS VISIBLE */}
       <motion.div
-        className="fixed top-0 left-0 w-4 h-4 bg-[var(--accent)] rounded-full pointer-events-none z-[9999] mix-blend-difference"
+        className="fixed top-0 left-0 w-4 h-4 bg-[var(--accent)] rounded-full pointer-events-none z-[99999] mix-blend-difference"
         style={{
           x: cursorXSpring,
           y: cursorYSpring,
@@ -52,9 +53,9 @@ export default function CustomCursor() {
         }}
       />
       
-      {/* Outer ring */}
+      {/* Outer ring - ALWAYS VISIBLE */}
       <motion.div
-        className="fixed top-0 left-0 w-8 h-8 border-2 border-[var(--accent)] rounded-full pointer-events-none z-[9998] mix-blend-difference"
+        className="fixed top-0 left-0 w-8 h-8 border-2 border-[var(--accent)] rounded-full pointer-events-none z-[99998] mix-blend-difference"
         style={{
           x: useSpring(cursorX, { damping: 50, stiffness: 400 }),
           y: useSpring(cursorY, { damping: 50, stiffness: 400 }),
