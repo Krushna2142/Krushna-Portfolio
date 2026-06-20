@@ -1,8 +1,29 @@
 const dbService = require('../services/db.service');
-const { Resend } = require('resend');
-const { EMAIL_USER } = require('../config/constants');
+const nodemailer = require('nodemailer');
+const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = require('../config/constants');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create transporter with better config
+const transporter = nodemailer.createTransport({
+  host: EMAIL_HOST || 'smtp.gmail.com',
+  port: EMAIL_PORT || 587,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false, // Fix for self-signed certs
+  },
+});
+
+// Verify connection on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ Email server connection failed:', error.message);
+  } else {
+    console.log('✅ Email server is ready to send messages');
+  }
+});
 
 exports.send = async (req, res) => {
   try {
@@ -16,27 +37,45 @@ exports.send = async (req, res) => {
       ip_address: req.ip,
     });
 
-    // 2. Send email in background (DO NOT await)
-    resend.emails.send({
-      from: 'Portfolio Contact <onboarding@resend.dev>',
+    // 2. Email configuration
+    const mailOptions = {
+      from: `"Portfolio Contact" <${EMAIL_USER}>`,
       to: EMAIL_USER,
       subject: `[Portfolio] New message: ${subject}`,
       html: `
-        <h2>New contact from ${name}</h2>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <p><strong>Message:</strong><br/>${message}</p>
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>New contact from ${name}</h2>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Subject:</strong> ${subject}</p>
+          <p><strong>Message:</strong><br/>${message}</p>
+          <hr/>
+          <p style="color: #888; font-size: 12px;">Sent from your portfolio website</p>
+        </div>
       `,
-    }).then(() => {
-      console.log('✅ Email sent successfully!');
-    }).catch((err) => {
-      console.error('❌ Email failed:', err.message);
+    };
+
+    // 3. Send email in background (DON'T await)
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('❌ Email sending failed:', error.message);
+        console.error('Error code:', error.code);
+        console.error('Error response:', error.response);
+        console.error('Full error:', error);
+      } else {
+        console.log('✅ Email sent successfully:', info.messageId);
+        console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
+      }
     });
 
-    // 3. Respond immediately
-    res.status(201).json({ success: true, message: 'Message sent successfully', data: contact });
+    // 4. Respond immediately to frontend
+    res.status(201).json({ 
+      success: true, 
+      message: 'Message sent successfully', 
+      data: contact 
+    });
 
   } catch (err) {
+    console.error('❌ Controller error:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
