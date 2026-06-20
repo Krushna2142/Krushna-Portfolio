@@ -5,7 +5,10 @@ const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = require('../config/co
 const transporter = nodemailer.createTransport({
   host: EMAIL_HOST,
   port: EMAIL_PORT,
-  secure: false,
+  secure: false, 
+  pool: true, // <--- ADD THIS: Reuses connections, making subsequent emails instant
+  maxConnections: 5,
+  maxMessages: 100,
   auth: { user: EMAIL_USER, pass: EMAIL_PASS },
 });
 
@@ -15,12 +18,14 @@ exports.send = async (req, res) => {
     if (!name || !email || !subject || !message)
       return res.status(400).json({ success: false, message: 'All fields required' });
 
+    // 1. Save to database (Keep await here so you have the data)
     const contact = await dbService.create('contacts', {
       name, email, subject, message,
       ip_address: req.ip,
     });
 
-    await transporter.sendMail({
+    // 2. SEND EMAIL IN THE BACKGROUND (DO NOT USE 'await')
+    transporter.sendMail({
       from: EMAIL_USER,
       to: EMAIL_USER,
       subject: `[Portfolio] New message: ${subject}`,
@@ -30,9 +35,14 @@ exports.send = async (req, res) => {
         <p><strong>Subject:</strong> ${subject}</p>
         <p><strong>Message:</strong><br/>${message}</p>
       `,
-    }).catch(() => {});
+    }).catch((err) => {
+      // Log the error if it fails, but don't block the response
+      console.error('Background email failed:', err.message); 
+    });
 
+    // 3. RESPOND TO FRONTEND IMMEDIATELY (Takes < 50ms)
     res.status(201).json({ success: true, message: 'Message sent successfully', data: contact });
+    
   } catch (err) { 
     res.status(500).json({ success: false, message: err.message }); 
   }
