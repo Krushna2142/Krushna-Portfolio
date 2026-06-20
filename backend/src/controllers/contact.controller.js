@@ -1,16 +1,8 @@
 const dbService = require('../services/db.service');
-const nodemailer = require('nodemailer');
-const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = require('../config/constants');
+const { Resend } = require('resend');
+const { EMAIL_USER } = require('../config/constants');
 
-const transporter = nodemailer.createTransport({
-  host: EMAIL_HOST,
-  port: EMAIL_PORT,
-  secure: false,
-  pool: true, // <--- ADD THIS: Reuses connections, making subsequent emails instant
-  maxConnections: 5,
-  maxMessages: 100,
-  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 exports.send = async (req, res) => {
   try {
@@ -18,32 +10,30 @@ exports.send = async (req, res) => {
     if (!name || !email || !subject || !message)
       return res.status(400).json({ success: false, message: 'All fields required' });
 
-    // 1. Save to database (Keep await here so you have the data)
+    // 1. Save to database
     const contact = await dbService.create('contacts', {
       name, email, subject, message,
       ip_address: req.ip,
     });
 
-    // 2. SEND EMAIL IN THE BACKGROUND (DO NOT USE 'await')
-    transporter.sendMail({
-      from: EMAIL_USER,
+    // 2. Send email in background (DO NOT await)
+    resend.emails.send({
+      from: 'Portfolio Contact <onboarding@resend.dev>',
       to: EMAIL_USER,
       subject: `[Portfolio] New message: ${subject}`,
       html: `
-    <h2>New contact from ${name}</h2>
-    <p><strong>Email:</strong> ${email}</p>
-    <p><strong>Subject:</strong> ${subject}</p>
-    <p><strong>Message:</strong><br/>${message}</p>
-  `,
+        <h2>New contact from ${name}</h2>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Message:</strong><br/>${message}</p>
+      `,
     }).then(() => {
       console.log('✅ Email sent successfully!');
     }).catch((err) => {
-      console.error('❌ Email sending failed:', err.message);
-      console.error('Error code:', err.code);
-      console.error('Error response:', err.response);
+      console.error('❌ Email failed:', err.message);
     });
 
-    // 3. RESPOND TO FRONTEND IMMEDIATELY (Takes < 50ms)
+    // 3. Respond immediately
     res.status(201).json({ success: true, message: 'Message sent successfully', data: contact });
 
   } catch (err) {
