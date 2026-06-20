@@ -1,11 +1,9 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'  // ← Change this line
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { adminAuth } from '@/lib/admin'
-
-
 
 export default function AdminRegister() {
   const router = useRouter()
@@ -14,7 +12,6 @@ export default function AdminRegister() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [registrationSecret, setRegistrationSecret] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [showSecret, setShowSecret] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -53,12 +50,14 @@ export default function AdminRegister() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md p-8 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10"
+        className="w-full max-w-md p-6 sm:p-8 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl"
       >
-        <h1 className="text-3xl font-bold mb-2 text-center">
-          <span className="text-[var(--accent)]">Create</span> Account
-        </h1>
-        <p className="text-[var(--muted)] text-center mb-8">Admin Registration</p>
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+            <span className="text-[var(--accent)]">Create</span> Account
+          </h1>
+          <p className="text-[var(--muted)] text-sm sm:text-base">Admin Registration</p>
+        </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-400 text-sm">
@@ -108,40 +107,29 @@ export default function AdminRegister() {
 
           <div>
             <label className="block text-sm font-medium mb-2 text-white/70">Confirm Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 pr-12 rounded-xl bg-white/5 border border-white/10 focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 transition-all text-white"
-                placeholder="Re-enter password"
-              />
-            </div>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 transition-all text-white"
+              placeholder="Re-enter password"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-2 text-white/70">
               Registration Secret
-              <span className="text-xs text-[var(--muted)] ml-2">(Required for security)</span>
+              <span className="text-xs text-[var(--muted)] ml-2">(Required)</span>
             </label>
-            <div className="relative">
-              <input
-                type={showSecret ? 'text' : 'password'}
-                value={registrationSecret}
-                onChange={(e) => setRegistrationSecret(e.target.value)}
-                required
-                className="w-full px-4 py-3 pr-12 rounded-xl bg-white/5 border border-white/10 focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 transition-all text-white"
-                placeholder="Enter registration secret code"
-              />
-              <button
-                type="button"
-                onClick={() => setShowSecret(!showSecret)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--accent)]"
-              >
-                {showSecret ? '🙈' : '️'}
-              </button>
-            </div>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={registrationSecret}
+              onChange={(e) => setRegistrationSecret(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 transition-all text-white"
+              placeholder="Enter registration secret code"
+            />
           </div>
 
           <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">

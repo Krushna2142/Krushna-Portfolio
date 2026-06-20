@@ -1,11 +1,9 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'  // ← Change this line
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { adminAuth } from '@/lib/admin'
-
-
 
 export default function AdminLogin() {
   const router = useRouter()
@@ -36,12 +34,14 @@ export default function AdminLogin() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md p-8 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10"
+        className="w-full max-w-md p-6 sm:p-8 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl"
       >
-        <h1 className="text-3xl font-bold mb-2 text-center">
-          <span className="text-[var(--accent)]">Admin</span> Login
-        </h1>
-        <p className="text-[var(--muted)] text-center mb-8">Portfolio Management System</p>
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+            <span className="text-[var(--accent)]">Admin</span> Login
+          </h1>
+          <p className="text-[var(--muted)] text-sm sm:text-base">Portfolio Management System</p>
+        </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-400 text-sm">
@@ -79,7 +79,6 @@ export default function AdminLogin() {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--accent)] transition-colors"
               >
                 {showPassword ? (
-                  // Eye off icon
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
                     <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
@@ -87,7 +86,6 @@ export default function AdminLogin() {
                     <line x1="2" x2="22" y1="2" y2="22"/>
                   </svg>
                 ) : (
-                  // Eye icon
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
                     <circle cx="12" cy="12" r="3"/>
@@ -97,7 +95,7 @@ export default function AdminLogin() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
             <label className="flex items-center gap-2 text-white/70 cursor-pointer">
               <input
                 type="checkbox"
@@ -107,7 +105,7 @@ export default function AdminLogin() {
               />
               Show password
             </label>
-            <Link href="/admin/forgot-password" className="text-[var(--accent)] hover:underline">
+            <Link href="/admin/forgot-password" className="text-[var(--accent)] hover:underline text-center sm:text-right">
               Forgot password?
             </Link>
           </div>

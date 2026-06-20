@@ -4,72 +4,62 @@ import { motion, useMotionValue, useSpring } from 'framer-motion'
 
 export default function CustomCursor() {
   const [isHovering, setIsHovering] = useState(false)
-  const [isClient, setIsClient] = useState(false)
-  const [isTouchDevice, setIsTouchDevice] = useState(false)
-  
+  const [isClickable, setIsClickable] = useState(false)
   const cursorX = useMotionValue(-100)
   const cursorY = useMotionValue(-100)
-  
-  const springConfig = { damping: 25, stiffness: 400, mass: 0.5 }
+
+  const springConfig = { damping: 25, stiffness: 700 }
   const cursorXSpring = useSpring(cursorX, springConfig)
   const cursorYSpring = useSpring(cursorY, springConfig)
 
   useEffect(() => {
-    setIsClient(true)
-    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
-
-    if (isTouchDevice) return
-
     const moveCursor = (e: MouseEvent) => {
-      cursorX.set(e.clientX)
-      cursorY.set(e.clientY)
+      cursorX.set(e.clientX - 16)
+      cursorY.set(e.clientY - 16)
     }
-    window.addEventListener('mousemove', moveCursor, { passive: true })
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-      if (target.closest('a, button, [data-cursor-hover]')) {
+      if (target.closest('button, a, input, [data-cursor-hover]')) {
         setIsHovering(true)
+        if (target.closest('button, a, [data-cursor-hover]')) {
+          setIsClickable(true)
+        }
       } else {
         setIsHovering(false)
+        setIsClickable(false)
       }
     }
-    document.addEventListener('mouseover', handleMouseOver, { passive: true })
+
+    window.addEventListener('mousemove', moveCursor)
+    window.addEventListener('mouseover', handleMouseOver)
 
     return () => {
       window.removeEventListener('mousemove', moveCursor)
-      document.removeEventListener('mouseover', handleMouseOver)
+      window.removeEventListener('mouseover', handleMouseOver)
     }
-  }, [cursorX, cursorY, isTouchDevice])
-
-  // Don't render during SSR or on touch devices
-  if (!isClient || isTouchDevice) return null
+  }, [cursorX, cursorY])
 
   return (
     <>
+      {/* Main cursor dot */}
+      <motion.div
+        className="fixed top-0 left-0 w-4 h-4 bg-[var(--accent)] rounded-full pointer-events-none z-[9999] mix-blend-difference"
+        style={{
+          x: cursorXSpring,
+          y: cursorYSpring,
+          scale: isClickable ? 1.5 : isHovering ? 1.2 : 1,
+        }}
+      />
+      
       {/* Outer ring */}
       <motion.div
-        className="fixed top-0 left-0 w-8 h-8 border-2 border-[var(--accent)] rounded-full pointer-events-none z-[9999] mix-blend-difference"
-        style={{ 
-          x: cursorXSpring, 
-          y: cursorYSpring, 
-          translateX: '-50%', 
-          translateY: '-50%',
-        }}
-        animate={{ 
-          scale: isHovering ? 2 : 1, 
-          opacity: isHovering ? 0.5 : 1 
-        }}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      />
-      {/* Inner dot */}
-      <motion.div
-        className="fixed top-0 left-0 w-2 h-2 bg-[var(--accent)] rounded-full pointer-events-none z-[9999] mix-blend-difference"
-        style={{ 
-          x: cursorXSpring, 
-          y: cursorYSpring, 
-          translateX: '-50%', 
-          translateY: '-50%' 
+        className="fixed top-0 left-0 w-8 h-8 border-2 border-[var(--accent)] rounded-full pointer-events-none z-[9998] mix-blend-difference"
+        style={{
+          x: useSpring(cursorX, { damping: 50, stiffness: 400 }),
+          y: useSpring(cursorY, { damping: 50, stiffness: 400 }),
+          scale: isHovering ? 1.5 : 1,
+          opacity: 0.5,
         }}
       />
     </>
