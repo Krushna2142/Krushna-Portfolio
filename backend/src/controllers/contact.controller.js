@@ -1,77 +1,71 @@
-const dbService = require('../services/db.service');
 const nodemailer = require('nodemailer');
 const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = require('../config/constants');
 
-// Create transporter with better config
+// Create transporter
 const transporter = nodemailer.createTransport({
   host: EMAIL_HOST || 'smtp.gmail.com',
   port: EMAIL_PORT || 587,
-  secure: false, // true for 465, false for other ports
+  secure: false,
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASS,
   },
   tls: {
-    rejectUnauthorized: false, // Fix for self-signed certs
+    rejectUnauthorized: false,
   },
 });
 
-// Verify connection on startup
+// 🔥 CRITICAL: This runs when the server starts. 
+// It will instantly tell us if your Render env variables are correct.
 transporter.verify((error, success) => {
   if (error) {
-    console.error('❌ Email server connection failed:', error.message);
+    console.error('❌ EMAIL SERVER CONNECTION FAILED!');
+    console.error('Reason:', error.message);
+    console.error('Check your EMAIL_USER and EMAIL_PASS in Render Environment Variables.');
   } else {
-    console.log('✅ Email server is ready to send messages');
+    console.log('✅ Email server is ready and waiting for messages...');
   }
 });
 
 exports.send = async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
-    if (!name || !email || !subject || !message)
+    if (!name || !email || !subject || !message) {
       return res.status(400).json({ success: false, message: 'All fields required' });
+    }
 
-    // 1. Save to database
-    const contact = await dbService.create('contacts', {
-      name, email, subject, message,
-      ip_address: req.ip,
-    });
-
-    // 2. Email configuration
+    // Email configuration
     const mailOptions = {
       from: `"Portfolio Contact" <${EMAIL_USER}>`,
       to: EMAIL_USER,
+      replyTo: email, // When you hit "reply" in Gmail, it replies to the client
       subject: `[Portfolio] New message: ${subject}`,
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2>New contact from ${name}</h2>
-          <p><strong>Email:</strong> ${email}</p>
+        <div style="font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+          <h2 style="color: #333;">New contact from ${name}</h2>
+          <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
           <p><strong>Subject:</strong> ${subject}</p>
-          <p><strong>Message:</strong><br/>${message}</p>
-          <hr/>
-          <p style="color: #888; font-size: 12px;">Sent from your portfolio website</p>
+          <hr style="border: 0; border-top: 1px solid #eee;"/>
+          <p style="line-height: 1.6;"><strong>Message:</strong><br/>${message.replace(/\n/g, '<br/>')}</p>
         </div>
       `,
     };
 
-    // 3. Send email in background (DON'T await)
+    // Send email in the background (DO NOT await - keeps frontend lightning fast)
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.error('❌ Email sending failed:', error.message);
-        console.error('Error code:', error.code);
-        console.error('Error response:', error.response);
-        console.error('Full error:', error);
+        console.error('❌ EMAIL FAILED TO SEND!');
+        console.error('Error Message:', error.message);
+        console.error('Error Code:', error.code);
       } else {
-        console.log('✅ Email sent successfully:', info.messageId);
-        console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
+        console.log('✅ Email sent successfully! ID:', info.messageId);
       }
     });
 
-    // 4. Respond immediately to frontend
+    // Respond to frontend immediately
     res.status(201).json({ 
       success: true, 
-      message: 'Message sent successfully', 
-      data: contact 
+      message: 'Message sent successfully' 
     });
 
   } catch (err) {
@@ -80,32 +74,7 @@ exports.send = async (req, res) => {
   }
 };
 
-exports.getAll = async (req, res) => {
-  try {
-    const messages = await dbService.findAll('contacts', {
-      sort: 'created_at',
-      order: 'desc'
-    });
-    res.json({ success: true, data: messages });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-exports.markRead = async (req, res) => {
-  try {
-    const msg = await dbService.update('contacts', req.params.id, { is_read: true });
-    res.json({ success: true, data: msg });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-exports.remove = async (req, res) => {
-  try {
-    await dbService.delete('contacts', req.params.id);
-    res.json({ success: true, message: 'Message deleted' });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+// You can remove or keep these, they won't be used by the form anymore
+exports.getAll = async (req, res) => res.json({ success: true, data: [] });
+exports.markRead = async (req, res) => res.json({ success: true });
+exports.remove = async (req, res) => res.json({ success: true });
